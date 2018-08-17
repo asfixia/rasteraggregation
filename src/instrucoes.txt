@@ -1,0 +1,9 @@
+//Compile
+Rcpp::compileAttributes("./", verbose = TRUE)
+
+//Install rasterAgregation
+install.packages("./", repos = NULL, type = "source")
+
+//Carregar rasteraggregation
+library(rasteraggregation)
+aggregation_resamplingSum("Y:data/mocambique_laurel/pop_density_estimate_2015/pop_density_estimate_2015.tif", "F:/Danilo/Trampo/gerado/menor.tif")

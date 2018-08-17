@@ -1,0 +1,38 @@
+Rcpp::compileAttributes("C:/Users/Danilo/Documents/rasteraggregation", verbose = TRUE)
+
+
+install.packages("C:/Users/Danilo/Documents/rasteraggregation", repos = NULL, type="source")
+
+library(rasteraggregation)
+resamplingSum("F:/Danilo/Trampo/gerado/reduzido.tif", "F:/Danilo/Trampo/gerado/menor.tif")
+
+
+install.packages("C:/Users/Danilo/Documents/rasteraggregation", repos = NULL, type="source")
+
+library(rasteraggregation)
+resamplingSum("F:/Danilo/Trampo/data_dir/data/mocambique_laurel/pop_density_estimate_2015/pop_density_estimate_2015.tif", "F:/Danilo/Trampo/gerado/pop_density_estimate_2015.tif")
+
+
+
+
+install.packages("C:/Users/Danilo/Documents/rasteraggregation", repos = NULL, type="source")
+
+library(rasteraggregation)
+aggregation_resamplingSum("F:/Danilo/Trampo/data_dir/data/mocambique_laurel/pop_density_estimate_2015/pop_density_estimate_2015.tif", "F:/Danilo/Trampo/gerado/menor.tif")
+
+
+
+Rcpp::compileAttributes("F:/Danilo/Temp/rasteraggregation", verbose = TRUE)
+install.packages("F:/Danilo/Programacao/content/rasteraggregation", repos = NULL, type="source")
+
+library(rasteraggregation)
+aggregation_resamplingSum("F:/Danilo/Trampo/data_dir/data/mocambique_laurel/pop_density_estimate_2015/pop_density_estimate_2015.tif", "F:/Danilo/Trampo/gerado/pop_density_estimate_2015.tif")
+
+
+
+install.packages("F:/Danilo/Programacao/content/rasteraggregation", repos = NULL, type="source")
+
+library(rasteraggregation)
+aggregation_resamplingSum("F:/Danilo/Trampo/data_dir/data/mocambique_laurel/pop_density_estimate_2015/pop_density_estimate_2015.tif", "F:/Danilo/Trampo/gerado/menor.tif")
+aggregation_resamplingSum("F:/Danilo/Trampo/data_dir/data/mocambique_laurel/pop_density_estimate_2015/pop_density_estimate_2015.tif", "F:/Danilo/Trampo/gerado/pop_density_estimate_2015.tif")
+aggregation_resamplingSum("F:/Danilo/Trampo/data_dir/data/mocambique_laurel/pop_density_estimate_2015/pop_density_estimate_2015.tif", "F:/Danilo/Trampo/gerado/mapZoom6.tif")
