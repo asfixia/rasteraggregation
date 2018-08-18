@@ -8,10 +8,10 @@ https://github.com/danilomalzao/rasteraggregation";
 
     Group {{
         @alias = resampledMap
-        resampledMap := MapFilename "C:/rasteraggregation/submodel/pop_density_estimate_2015_resampled.tif";
+        resampledMap := MapFilename "C:/rasteraggregation-master/submodel/pop_density_estimate_2015_resampled.tif";
 
         @alias = originalMap
-        originalMap := MapFilename "C:/rasteraggregation/submodel/pop_density_estimate_2015/pop_density_estimate_2015.tif";
+        originalMap := MapFilename "C:/rasteraggregation-master/submodel/pop_density_estimate_2015/pop_density_estimate_2015.tif";
 
         @alias = cellWidthProp
         cellWidthProp := RealValue 0.16;
