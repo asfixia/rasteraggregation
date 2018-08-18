@@ -1,0 +1,48 @@
+[IDENTIFICATION]
+title = 'Population Density Estimates in 2015 (km²)'
+description = 'Estimates of number of people per square kilometre in 2015 in Mozambique. 
+The estimated value was obtained by applying population growth trends to population counts for the lowest subnational administrative unit for which 2000 population data were available.
+
+Number of Columns : 244
+Cell Height : 4517.88483257
+Cell Width : 4517.88483257
+Number of Layers : 1
+Null Cell Value : -99.0
+Number of Lines : 412
+Cell Type : Float32'
+
+source = 'FAO Poverty Mapping Project - Food and Agriculture Organization of the United Nations (2005)
+Link to download: http://www.fao.org/geonetwork/srv/en/main.home
+Access date: November 2017'
+citation = 'Salvatore M, Pozzi F, Ataman E, Huddleston B, Bloise M (2005) Mapping global urban and rural populations. Environmental and Natural Resources Working Paper, 24. FAO, Rome.'
+original scale = 
+thematic category = 'planejamentoECadastro (015)'
+
+
+[SPATIAL REPRESENTATION SYSTEM]
+creation date = 2017
+original format = 'matricial (002)'
+coordinate system representation = 'PROJCS["Africa_Albers_Equal_Area_Conic",
+    GEOGCS["WGS 84",
+        DATUM["WGS_1984",
+            SPHEROID["WGS 84",6378137,298.257223563]],
+        PRIMEM["Greenwich",0],
+        UNIT["degree",0.0174532925199433]],
+    PROJECTION["Albers_Conic_Equal_Area"],
+    PARAMETER["standard_parallel_1",20],
+    PARAMETER["standard_parallel_2",-23],
+    PARAMETER["latitude_of_center",0],
+    PARAMETER["longitude_of_center",25],
+    PARAMETER["false_easting",0],
+    PARAMETER["false_northing",0],
+    UNIT["metre",1]]'
+
+[CATEGORIES]
+aditional information = ''
+
+[RANGE]
+layer_1 = '(Min=0.090,Max=3845.792)'
+
+[METAMETADATA]
+updated = '2017/12/07'
+publishers = 'Centro de Sensoriamento Remoto - CSR/UFMG'
