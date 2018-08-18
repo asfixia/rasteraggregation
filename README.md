@@ -12,13 +12,16 @@ install.packages("C:/rasteraggregation-master/", repos = NULL, type = "source")
 ```
 
 ## In Dinamica EGO
+### If R is installed:
+Just open the following submodel: C:/rasteraggregation-master/submodel/sumAlgorithmSubmodel.ego
+Run and you got a working Example.
+
+### IF R is not installed:
 Follow: https://csr.ufmg.br/dinamica/dokuwiki/doku.php?id=calculate_r_expression#local_r_installation
-To install R in dinamica, then use the submodel contained in:
-C:/rasteraggregation/submodel/sumAlgorithmSubmodel.ego
-And run.
+To install R in dinamica.
 
 ## To run directly in R
 ```
 library(rasteraggregation)
-aggregation_resamplingSum("./pop_density_estimate_2015.tif", "./menor.tif")
+aggregation_resamplingSum("C:/rasteraggregation-master/submodel/pop_density_estimate_2015.tif", "newMap.tif")
 ```
