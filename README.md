@@ -1,16 +1,13 @@
 # rasteraggregation
 Weighted Resampling Algorithms in Rcpp
 
-Extract this to:
-C:/rasteraggregation
+Download here: https://github.com/danilomalzao/rasteraggregation/archive/master.zip
+Than extract this to: "C:/rasteraggregation"
 
-## Compile
+## Install the plugin (copying this into R)
 ```
 Rcpp::compileAttributes("C:/rasteraggregation/", verbose = TRUE)
-```
 
-## Install rasterAgregation
-```
 install.packages("C:/rasteraggregation/", repos = NULL, type = "source")
 ```
 
