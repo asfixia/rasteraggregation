@@ -1,4 +1,4 @@
-﻿
+
 #include <Rcpp.h>
 #include <stdlib.h>
 #include <algorithm>
@@ -17,71 +17,6 @@ bool isEqual(double a, double b) {
 	static double EPSILON = 1E-6;
 	return std::abs(a - b) < EPSILON;
 }
-
-/*
-double getValue(void * values, int index, GDALDataType cellType) {
-switch (cellType) {
-case GDT_Byte:
-case GDT_UInt16:
-case GDT_Int16:
-case GDT_CInt16:
-return (double)((short int *)values)[index];
-break;
-case GDT_UInt32:
-case GDT_Int32:
-case GDT_CInt32:
-return (double)((int *)values)[index];
-break;
-case GDT_Float32:
-case GDT_CFloat32:
-return (double)((float *)values)[index];
-break;
-case GDT_Float64:
-case GDT_CFloat64:
-//float;
-return ((double *)values)[index];
-break;
-//complex
-return ((int *)values)[index];
-break;
-default:
-break;
-}
-return 0;
-}
-
-void setValue(void * lines, int index, GDALDataType cellType, double value) {
-int wasClamped;
-int pbRounded;
-double newValue = GDALAdjustValueToDataType(cellType, value, &wasClamped, &pbRounded);
-switch (cellType) {
-case GDT_Byte:
-case GDT_UInt16:
-case GDT_Int16:
-case GDT_CInt16:
-((short int *)lines)[index] = (short int)value;
-break;
-case GDT_UInt32:
-case GDT_Int32:
-case GDT_CInt32:
-((int *)lines)[index] = (int)value;
-break;
-case GDT_Float32:
-case GDT_CFloat32:
-((float *)lines)[index] = (float)value;
-break;
-case GDT_Float64:
-case GDT_CFloat64:
-//float;
-((double *)lines)[index] = value;
-break;
-//complex
-break;
-default:
-break;
-}
-}
-*/
 
 //Danilo aplica a soma das celulas e retorna o valor. (considerando a % interna da celula).
 float focalWeightedSum(double * lines, int xWidth, int yHeight,
@@ -214,50 +149,30 @@ void resampling_algorithm(String originalMapPath, String newMapPath, ResamplingM
 	int originalMapFromLineInMemory = INT_MIN;
 	int fromLineToWrite = 0;
 
-	//Danilo vou dividir a mem�ria igualmente por enqt.
+	//Divido a memória igualmente por enqt.
 	int maxSupportedCellByteSize = sizeof(double); // 64 Bytes
 	double qntCellsInMemory = maxMemoryMB * byteToMB / maxSupportedCellByteSize;
 
-	/**
-	Se original for maior:
-	A regra é que cada célula do newMap acessa várias do original, para calcular.
-	caso Contrário (original for menor):
-	A regra é que cada célula do newMap acessa várias vezes a mesma célula do original.
-	*/
-	bool isNewBiggerX = (newMapXCount > originalMapXCount);
-	bool isNewBiggerY = (newMapYCount > originalMapYCount);
-
-	double ori2NewPropX = double(originalMapXCount) / newMapXCount; //#celulaOsriginal, por celulaNovo
-	double ori2NewPropY = double(originalMapYCount) / newMapYCount;
-
-	double new2OriPropY = double(newMapYCount) / originalMapYCount;
-
-	double curPropX = ori2NewPropX;
-	double curPropY = ori2NewPropY;
-																 //Danilo vou melhorar um pouco considerando q o novoMapa tem poucas c�lulas
+	double curPropX = double(originalMapXCount) / newMapXCount; //#celulaOsriginal, por celulaNovo
+	double curPropY = double(originalMapYCount) / newMapYCount;
+	
 	int maxMapLinesInMemory = floor(qntCellsInMemory / (originalMapXCount + newMapXCount));
-	maxMapLinesInMemory = std::max(maxMapLinesInMemory, (int)ceil(std::max(ori2NewPropY, new2OriPropY)));
+	maxMapLinesInMemory = std::max(maxMapLinesInMemory, (int)ceil(curPropY) + 1);
 
 	double * originalMapLines = (double *)CPLMalloc(sizeof(double) * originalMapXCount * maxMapLinesInMemory);
 	double * newMapLines = (double *)CPLMalloc(sizeof(double) * newMapXCount * maxMapLinesInMemory);
 	Rcpp::Rcout << curPropX << " X:prop:Y " << curPropY << " " << maxMapLinesInMemory << ":yMem \n";
-	//for (int iNewMapY = 120; iNewMapY < 121; iNewMapY++) { //forTests
+	//for (int iNewMapY = 0; iNewMapY < 30; iNewMapY++) { //forTests
 	for (int iNewMapY = 0; iNewMapY < newMapYCount; iNewMapY++) {
 		//Rcpp::Rcout << "\n\niNewY " << iNewMapY << "\n\n\n";
 		double realIniLine = curPropY * iNewMapY;
-		//realIniLine <-propLine * curLine # ifelse((propLine * curLine) >= nrow(mapOri), nrow(mapOri) - 1, propLine * curLine)
 		int iniLine = floor(realIniLine);
-		//iniLine <-floor(realIniLine)
 		double realToLine = std::min((double)(originalMapYCount - 1), curPropY * (iNewMapY + 1));
-		//realToLine <-ifelse((realIniLine + propLine) >= nrow(mapOri), nrow(mapOri) - 1, realIniLine + propLine)
 		int toLine = floor(realToLine);
-		//toLine <- floor(realToLine)
-		double weightIniLine = 1 - (realIniLine - iniLine); // *(isNewBiggerX ? 1 : new2OriPropY);
-		//weightIniLine <-1 - (realIniLine - iniLine)
-		double weightToLine = (realToLine - toLine); // <-igual // (toLine + 1 - realToLine)
-		//weightToLine <-(realToLine - toLine)
+		double weightIniLine = 1 - (realIniLine - iniLine);
+		double weightToLine = (realToLine - toLine);
 
-		if (toLine >= (originalMapFromLineInMemory + maxMapLinesInMemory)) { //Se n�o estiver na mem�ria.
+		if (toLine >= (originalMapFromLineInMemory + maxMapLinesInMemory - 1)) { //Se não estiver na memória.
 			originalMapFromLineInMemory = iniLine;
 			int curYSize = std::min(maxMapLinesInMemory, originalMapYCount - iniLine);
 			//Rcpp::Rcout << "ReadingOriginalMap: " << iniLine << " F:OriY:T " << toLine << " memOriYSize: " << curYSize << " toOriMemLine: " << (iniLine + curYSize) << " ---\n";
@@ -267,35 +182,27 @@ void resampling_algorithm(String originalMapPath, String newMapPath, ResamplingM
 				originalMapXCount, curYSize, GDT_Float64, //Buffer XSize, ySize, CellType 
 				0, 0, 0); //Usarei default.
 
-			/*
-			Rcpp::Rcout << "\nRead as array: ";
-			for (int iOriY = 0, iCell = 0; iOriY < maxMapLinesInMemory; iOriY++) {
-			for (int iOriInd = 0; iOriInd < originalMapXCount; iOriInd++, iCell++)
-			Rcpp::Rcout << "(s" << iOriInd << ")" << originalMapLines[iCell] << ", ";
-			Rcpp::Rcout << "\n";
-			}
-			Rcpp::Rcout << "\n";
-			*/
-
+			/*if (iNewMapY == 28){
+				Rcpp::Rcout << "\nRead as array: ";
+				for (int iOriY = 0, iCell = 0; iOriY < maxMapLinesInMemory; iOriY++) {
+					for (int iOriInd = 0; iOriInd < originalMapXCount; iOriInd++, iCell++)
+						Rcpp::Rcout << "(" << iOriInd << ")" << originalMapLines[iCell] << ", ";
+					Rcpp::Rcout << "\n";
+				}
+				Rcpp::Rcout << "\n";
+			}*/
 		}
 		//Rcpp::Rcout << "after read" << "\n";
 
 		for (int iNewMapX = 0; iNewMapX < newMapXCount; iNewMapX++) {
 			double realIniCol = curPropX * iNewMapX;
-			//realIniCol <-propCol * curCol # ifelse((propCol * curCol) >= ncol(mapOri), ncol(mapOri) - 1, propCol * curCol)
 			int iniCol = floor(realIniCol);
-			//iniCol <-floor(realIniCol)
 			double realToCol = std::min((double)(originalMapXCount - 1), curPropX * (iNewMapX + 1));
-			//realToCol <-ifelse((realIniCol + propCol) >= ncol(mapOri), ncol(mapOri) - 1, realIniCol + propCol)
-			//bool hasNothingOnLastCellX = isEqual(floor(realToCol), realToCol);
-			//int toCol = hasNothingOnLastCellX ? std::max(floor(realToCol) - 1, (double)0) : floor(realToCol);
 			int toCol = floor(realToCol);
-			//toCol <-floor(realToCol)
 			
 			double weightIniCol = 1 - (realIniCol - iniCol);
-			//weightIniCol <-1 - (realIniCol - iniCol)
 			double weightToCol = (realToCol - toCol); // <- igual // (toCol + 1 - realToCol);
-			//weightToCol <-(realToCol - toCol)
+			
 			int newMapIndex = (iNewMapY - fromLineToWrite) * newMapXCount + iNewMapX;
 			int iniMemLine = iniLine - originalMapFromLineInMemory;
 			int toMemLine = toLine - originalMapFromLineInMemory;
@@ -306,8 +213,11 @@ void resampling_algorithm(String originalMapPath, String newMapPath, ResamplingM
 					GDT_Float64, originalMapNullValue,
 					iniCol, toCol, iniMemLine, toMemLine, //Map: fromX, toX, fromMemY, toMemY
 					weightIniLine, weightToLine, weightIniCol, weightToCol);
-				//Rcpp::Rcout << iNewMapX << " X:new:Y " << iNewMapY << " (" << realIniCol << ")" << iniCol << " F:Xori:T " << toCol << "(" << realToCol << ") " << iniLine << " F:Yori:T " << toLine << " "
-				//	<< weightIniCol << " X:WF:Y " << weightIniLine << " " << weightToCol << " X:WT:Y " << weightToLine << "---\n";
+					
+				/*if (iNewMapY == 28)
+				Rcpp::Rcout << iNewMapX << " X:new:Y " << iNewMapY << " (" << realIniCol << ")" << iniCol << " F:Xori:T " << toCol << "(" << realToCol << ") "
+					<< iniLine << " F:Yori:T " << toLine << " " << weightIniCol << " X:WF:Y " << weightIniLine << " " << weightToCol << " X:WT:Y " << weightToLine << " sum:" << value << "---\n";
+					*/
 				newMapLines[newMapIndex] = isEqual(value, (double)0) ? newMapNullValue : value;
 				break;
 			case AVERAGE:
@@ -315,15 +225,12 @@ void resampling_algorithm(String originalMapPath, String newMapPath, ResamplingM
 					GDT_Float64, originalMapNullValue,
 					iniCol, toCol, iniMemLine, toMemLine, //Map: fromX, toX, fromMemY, toMemY
 					weightIniLine, weightToLine, weightIniCol, weightToCol);
-				//if ((iNewMapY + 1) % maxMapLinesInMemory == 0)
 				//	Rcpp::Rcout << iNewMapX << " newX:newY " << iNewMapY << " " << iniCol << " oriFX:oriTX " << toCol << " " << iniMemLine << " fOriMY:tOriMY " << toMemLine << " " << iniLine << " oriYF:oriYT " << toLine << " ---\n
 				newMapLines[newMapIndex] = isEqual(value, (double)0) ? newMapNullValue : value;
 				break;
 			default:
 				break;
 			}
-
-			//setValue(newMapLines, newMapIndex, originalMapCellType, summed);
 		}
 
 		double curCalculatedYSize = (iNewMapY - fromLineToWrite) + 1;
