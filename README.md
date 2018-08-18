@@ -2,7 +2,7 @@
 Weighted Resampling Algorithms in Rcpp
 
 Download here: https://github.com/danilomalzao/rasteraggregation/archive/master.zip
-Than extract this to: "C:/rasteraggregation"
+Than extract this to: "C:/"
 
 ## Install the plugin (copying this into R)
 ```
