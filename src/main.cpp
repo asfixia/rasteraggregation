@@ -8,20 +8,45 @@
 using namespace Rcpp;
 
 
-
-bool isNaN(float value) {
+/**
+ * Verifica se o valor é NaN.
+ * @param value {double} Valor a ser verificado.
+ * @return {bool} True se for NaN False caso contrário.
+*/
+bool isNaN(double value) {
 	return value != value;
 }
 
+/**
+ * Verifica se dois Doubles são iguais.
+ * @param a {double} Verifica se os valores a e b são iguais considerando o erro.
+ * @return {bool} Retorna true caso os valores forem iguais, False caso contrário.
+*/
 bool isEqual(double a, double b) {
 	static double EPSILON = 1E-6;
 	return std::abs(a - b) < EPSILON;
 }
 
 //Danilo aplica a soma das celulas e retorna o valor. (considerando a % interna da celula).
-float focalWeightedSum(double * lines, int xWidth, int yHeight,
-	GDALDataType originalMapCellType, double nullValue,
-	int fromX, int toX, int fromY, int toY,
+/**
+ * Soma os elementos da matriz na janela.
+ *
+ * @param {double *} lines Array de valores, representando os dados matriciais.
+ * @param {int} xWidth Quantidade de colunas da matriz.
+ * @param {int} yHeight Quantidade de linhas da matriz.
+ * @param {double} nullValue Valor do nulo ou "sem Informação".
+ * @param {int} fromX Define a coluna inicial da janela de soma, indexada em 0. (se der from 0, inclui a linha 0)
+ * @param {int} fromY Define a linha inicial da janela de soma, indexada em 0 (se der to 0, inclui a linha 0)
+ * @param {int} toX Define a coluna final da janela de soma, indexada em 0. (se der from 0, inclui a linha 0)
+ * @param {int} toY Define a linha final da janela de soma, indexada em 0 (se der to 0, inclui a linha 0)
+ * @param {double} weightIniLine Peso atribuido a primeira linha da janela.
+ * @param {double} weightToLine Peso atribuido a ultima linha da janela.
+ * @param {double} weightIniCol Peso atribuido a primeira coluna da janela.
+ * @param {double} weightToCol Peso atribuido a ultima coluna da janela.
+ * @return {double} Valor da soma dos elementos da janela com os pesos dados.
+*/
+double focalWeightedSum(double * lines, int xWidth, int yHeight,
+	double nullValue, int fromX, int toX, int fromY, int toY,
 	double weightIniLine, double weightToLine, double weightIniCol, double weightToCol) {
 	double summed = 0;
 
@@ -64,9 +89,25 @@ float focalWeightedSum(double * lines, int xWidth, int yHeight,
 	return summed;
 }
 
-float focalWeightedAverage(double * lines, int xWidth, int yHeight,
-	GDALDataType originalMapCellType, double nullValue,
-	int fromX, int toX, int fromY, int toY,
+/**
+ * Calcula a média dos elementos da janela.
+ *
+ * @param {double *} lines Array de valores, representando os dados matriciais.
+ * @param {int} xWidth Quantidade de colunas da matriz.
+ * @param {int} yHeight Quantidade de linhas da matriz.
+ * @param {double} nullValue Valor do nulo ou "sem Informação".
+ * @param {int} fromX Define a coluna inicial da janela de soma, indexada em 0. (se der from 0, inclui a linha 0)
+ * @param {int} fromY Define a linha inicial da janela de soma, indexada em 0 (se der to 0, inclui a linha 0)
+ * @param {int} toX Define a coluna final da janela de soma, indexada em 0. (se der from 0, inclui a linha 0)
+ * @param {int} toY Define a linha final da janela de soma, indexada em 0 (se der to 0, inclui a linha 0)
+ * @param {double} weightIniLine Peso atribuido a primeira linha da janela.
+ * @param {double} weightToLine Peso atribuido a ultima linha da janela.
+ * @param {double} weightIniCol Peso atribuido a primeira coluna da janela.
+ * @param {double} weightToCol Peso atribuido a ultima coluna da janela.
+ * @return {double} Valor da média dos elementos na janela
+*/
+double focalWeightedAverage(double * lines, int xWidth, int yHeight,
+	double nullValue, int fromX, int toX, int fromY, int toY,
 	double weightIniLine, double weightToLine, double weightIniCol, double weightToCol) {
 	double summed = 0;
 	double quantity = 0;
@@ -110,12 +151,25 @@ float focalWeightedAverage(double * lines, int xWidth, int yHeight,
 	return quantity == 0 ? 0 : summed / quantity;
 }
 
+/**
+ * Metodo de resampling a ser aplicado.
+*/
 enum ResamplingMethod {
 	SUM,
 	AVERAGE
 };
 
 
+/**
+ * Calcula a janela necessária e aplica a operação respectiva ao metodo desejado.
+ * Essa função é responsável por ler e escrever os dados.
+ *
+ * PS: O newMapPath é considerado como o mapa já criado, com os tamanhos de célula corretos e ancorado na mesma posição do mapa originalMapPath.
+ * 
+ * @param originalMapPath {String} Caminho do mapa original.
+ * @param newMapPath {String} Caminho do mapa a ser reamostrado.
+ * @param resamplingMethod {ResamplingMethod} Metodo de sampling a ser aplicado.
+*/
 void resampling_algorithm(String originalMapPath, String newMapPath, ResamplingMethod resamplingMethod) {
 
 	GDALDataset  *pOriginalDataset;
@@ -192,7 +246,6 @@ void resampling_algorithm(String originalMapPath, String newMapPath, ResamplingM
 				Rcpp::Rcout << "\n";
 			}*/
 		}
-		//Rcpp::Rcout << "after read" << "\n";
 
 		for (int iNewMapX = 0; iNewMapX < newMapXCount; iNewMapX++) {
 			double realIniCol = curPropX * iNewMapX;
@@ -210,8 +263,7 @@ void resampling_algorithm(String originalMapPath, String newMapPath, ResamplingM
 			switch (resamplingMethod) {
 			case SUM:
 				value = focalWeightedSum(originalMapLines, originalMapXCount, originalMapYCount,
-					GDT_Float64, originalMapNullValue,
-					iniCol, toCol, iniMemLine, toMemLine, //Map: fromX, toX, fromMemY, toMemY
+					originalMapNullValue, iniCol, toCol, iniMemLine, toMemLine, //Map: nullValue(noData), fromX, toX, fromMemY, toMemY
 					weightIniLine, weightToLine, weightIniCol, weightToCol);
 					
 				/*if (iNewMapY == 28)
@@ -222,8 +274,7 @@ void resampling_algorithm(String originalMapPath, String newMapPath, ResamplingM
 				break;
 			case AVERAGE:
 				value = focalWeightedAverage(originalMapLines, originalMapXCount, originalMapYCount,
-					GDT_Float64, originalMapNullValue,
-					iniCol, toCol, iniMemLine, toMemLine, //Map: fromX, toX, fromMemY, toMemY
+					originalMapNullValue, iniCol, toCol, iniMemLine, toMemLine, //Map: nullValue(noData), fromX, toX, fromMemY, toMemY
 					weightIniLine, weightToLine, weightIniCol, weightToCol);
 				//	Rcpp::Rcout << iNewMapX << " newX:newY " << iNewMapY << " " << iniCol << " oriFX:oriTX " << toCol << " " << iniMemLine << " fOriMY:tOriMY " << toMemLine << " " << iniLine << " oriYF:oriYT " << toLine << " ---\n
 				newMapLines[newMapIndex] = isEqual(value, (double)0) ? newMapNullValue : value;
@@ -252,6 +303,14 @@ void resampling_algorithm(String originalMapPath, String newMapPath, ResamplingM
 	GDALClose(pNewDataset);
 }
 
+/**
+ * Aplica o metodo de resampling do mapa original armazenando o resultado no newMap.
+ *
+ * PS: O newMap precisa existir e ter a mesma projeção do mapa originalMapPath.
+ *
+ * @param originalMapPath {String} Caminho do mapa original.
+ * @param newMapPath {String} Caminho do mapa a ser reamostrado.
+*/
 // [[Rcpp::export]]
 void aggregation_resamplingSum(String originalMapPath, String newMapPath) {
 	resampling_algorithm(originalMapPath, newMapPath, SUM);
@@ -262,6 +321,10 @@ void aggregation_resamplingAverage(String originalMapPath, String newMapPath) {
 	resampling_algorithm(originalMapPath, newMapPath, AVERAGE);
 }
 
+/**
+ * Função que retorna a versão do gdal.
+ * @return {Sting} Versão do gdal.
+*/
 // [[Rcpp::export]]
 String aggregation_gdalVersion() {
 	return GDALVersionInfo("VERSION_NUM");
