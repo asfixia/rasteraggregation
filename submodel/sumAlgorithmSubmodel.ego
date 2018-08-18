@@ -1,0 +1,51 @@
+@date = 2018-Aug-18 17:28:46
+@version = 4.0.8.20180319
+@submodel.import = TransformWithWeightedSum { { \"originalMap\" : MapFilename, \"resampledMap\" : MapFilename, \"cellHeightProp\" : RealValue, \"cellWidthProp\" : RealValue } { } { \"resampledMap2\" : MapFilename } }
+Script {{
+    string17874 := String "Get Library at:
+https://github.com/danilomalzao/rasteraggregation";
+
+    Group {{
+        @alias = resampledMap
+        resampledMap := MapFilename "../../../gerado/pop_density_estimate_2015.tif";
+
+        @alias = originalMap
+        originalMap := MapFilename "../../../data_dir/data/mocambique_laurel/pop_density_estimate_2015/pop_density_estimate_2015.tif";
+
+        @alias = cellWidthProp
+        cellWidthProp := RealValue 0.16;
+
+        @alias = cellHeightProp
+        cellHeightProp := RealValue 0.503;
+
+        Print string17874 .none .unconditional {{
+        }};
+    }};
+
+    transformWithWeightedSum17595 := TransformWithWeightedSum originalMap resampledMap cellHeightProp cellWidthProp;
+
+    loadMap550100 := LoadMap originalMap .none .no 0 .none .none;
+
+    loadMap55010 := LoadMap transformWithWeightedSum17595 .none .no 0 .none .none;
+
+    extractMapAttributes15811 _ := ExtractMapAttributes loadMap55010 .yes .yes;
+
+    extractMapAttributes158110 _ := ExtractMapAttributes loadMap550100 .yes .yes;
+
+    @viewer.result = yes
+    getTableValue15816 := GetTableValue extractMapAttributes158110 [ 12 ] 2 .none;
+
+    @viewer.result = yes
+    getTableValue158160 := GetTableValue extractMapAttributes15811 [ 12 ] 2 .none;
+
+    @collapsed = no
+    createString55431 := CreateString "OriginalMapSum: <v1>
+ResampledMapSum: <v2>" {{
+        NumberValue getTableValue15816 1;
+
+        NumberValue getTableValue158160 2;
+    }};
+
+    Print createString55431 .none .unconditional {{
+    }};
+}};

@@ -1,0 +1,146 @@
+@submodel.name = TransformWithWeightedSum
+@submodel.description = "Resample a map using the weighted sum of cells.
+The weight is calculated by the intersection area of the new cell within original cells.
+
+This method preserve the total sum of the map after any resample."
+@submodel.group = Map Resample Method
+@submodel.import = GetBasicMapAttributes { { \"inputMap\" : Map } { } { \"numberOfLines\" : NonNegativeIntegerValue, \"numberOfColumns\" : NonNegativeIntegerValue, \"numberOfCells\" : RealValue, \"numberOfLayers\" : NonNegativeIntegerValue, \"cellHeight\" : RealValue, \"cellWidth\" : RealValue, \"cellWidthOrHeight\" : RealValue, \"cellArea\" : RealValue, \"cellType\" : CellType, \"nullValue\" : RealValue, \"hasNullValue\" : BooleanValue } }
+@date = 2018-Aug-18 17:28:46
+@version = 4.0.8.20180319
+Script {{
+    @submodel.in.constant.advanced = no
+    @submodel.in.constant.name = originalMap
+    @submodel.in.constant.optional = no
+    @submodel.in.constant.order = 1
+    originalMap := MapFilename .UNBOUND;
+
+    loadMap53711 := LoadMap originalMap .none .no 0 .none .none;
+
+    numberOfLines numberOfColumns _ _ cellHeight cellWidth _ _ cellType nullValue _ := GetBasicMapAttributes loadMap53711;
+
+    @submodel.in.constant.advanced = no
+    @submodel.in.constant.name = cellHeightProp
+    @submodel.in.constant.optional = no
+    @submodel.in.constant.order = 3
+    cellHeightProp := RealValue .UNBOUND;
+
+    // Value 0 ~ 1 
+    @submodel.in.constant.advanced = no
+    @submodel.in.constant.description = Value 0 ~ 1
+    @submodel.in.constant.name = cellWidthProp
+    @submodel.in.constant.optional = no
+    @submodel.in.constant.order = 4
+    cellWidthProp := RealValue .UNBOUND;
+
+    @alias = calculateNewCellSize
+    Group {{
+        @alias = originalMapCellWidth
+        originalMapCellWidth := IntegerValue cellWidth;
+
+        @alias = originalMapCellHeight
+        originalMapCellHeight := IntegerValue cellHeight;
+
+        @collapsed = no
+        @alias = newCellWidth
+        newCellWidth := CalculateValue [
+            v1 * v2
+        ] .none {{
+            NumberValue originalMapCellWidth 1;
+
+            NumberValue cellWidthProp 2;
+        }};
+
+        @collapsed = no
+        @alias = newCellHeight
+        newCellHeight := CalculateValue [
+            v1 * v2
+        ] .none {{
+            NumberValue originalMapCellHeight 1;
+
+            NumberValue cellHeightProp 2;
+        }};
+
+        @alias = cellHeight
+        _ := RealValue newCellHeight;
+
+        @alias = cellWidth
+        _ := RealValue newCellWidth;
+    }};
+
+    @submodel.in.constant.advanced = no
+    @submodel.in.constant.name = resampledMap
+    @submodel.in.constant.optional = no
+    @submodel.in.constant.order = 2
+    resampledMap := MapFilename .UNBOUND;
+
+    @alias = createMapWithCellSizeCustomized
+    Group {{
+        @alias = ignoredResamplingMethod
+        ignoredResamplingMethod := IntegerValue 0;
+
+        getProjectionInfo53710 _ _ _ _ _ _ _ := GetProjectionInfo loadMap53711;
+
+        transformMap6004 := TransformMap {
+            inputMapFilename = originalMap,
+            outputMapFilename = resampledMap,
+            outputFormatMapFilename = .none,
+            outputMapProjection = getProjectionInfo53710,
+            outputMapCellType = cellType,
+            outputMapNullValue = nullValue,
+            resamplingMethod = ignoredResamplingMethod,
+            additionalInputMapNullValue = .none,
+            inputMapProjection = .none,
+            outputMapLines = .none,
+            outputMapColumns = .none,
+            outputMapCellWidth = newCellWidth,
+            outputMapCellHeight = newCellHeight,
+            useCompression = .yes
+        };
+
+        @alias = newMap
+        newMap := MapFilename transformMap6004;
+
+        @collapsed = no
+        _ := CalculateRExpression "library(rasteraggregation)
+aggregation_resamplingSum(s2, s1)" .no {{
+            NumberString newMap 1;
+
+            NumberString originalMap 2;
+        }};
+    }};
+
+    Group {{
+        // Value or constant representing a map filename provided as the functor input. 
+        @alias = Resampled Map 2
+        @submodel.out.object.description = Value or constant representing a map filename provided as the functor input.
+        @submodel.out.object.name = resampledMap2
+        @submodel.out.object.order = 1
+        _ := MapFilename newMap;
+    }};
+
+    Group {{
+        @alias = #Cols
+        cols := IntegerValue numberOfColumns;
+
+        @alias = #Lines
+        lines := IntegerValue numberOfLines;
+
+        @collapsed = no
+        _ := CalculateValue [
+            floor(v1 / v2)
+        ] .none {{
+            NumberValue lines 1;
+
+            NumberValue cellHeightProp 2;
+        }};
+
+        @collapsed = no
+        _ := CalculateValue [
+            floor(v2 / v1)
+        ] .none {{
+            NumberValue cellWidthProp 1;
+
+            NumberValue cols 2;
+        }};
+    }};
+}};
