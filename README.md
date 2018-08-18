@@ -6,9 +6,9 @@ Than extract this to: "C:/"
 
 ## Install the plugin (copying this into R)
 ```
-Rcpp::compileAttributes("C:/rasteraggregation/", verbose = TRUE)
+Rcpp::compileAttributes("C:/rasteraggregation-master/", verbose = TRUE)
 
-install.packages("C:/rasteraggregation/", repos = NULL, type = "source")
+install.packages("C:/rasteraggregation-master/", repos = NULL, type = "source")
 ```
 
 ## In Dinamica EGO
