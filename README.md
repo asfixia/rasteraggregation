@@ -23,5 +23,5 @@ To install R in dinamica.
 ## To run directly in R
 ```
 library(rasteraggregation)
-aggregation_resamplingSum("C:/rasteraggregation-master/submodel/pop_density_estimate_2015.tif", "newMap.tif")
+aggregation_resamplingSum("C:/rasteraggregation-master/submodel/pop_density_estimate_2015/pop_density_estimate_2015.tif", "C:/rasteraggregation-master/submodel/pop_density_estimate_2015_resampled.tif")
 ```
