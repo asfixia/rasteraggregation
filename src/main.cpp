@@ -1,5 +1,5 @@
-
 #include <Rcpp.h>
+#include <ogrsf_frmts.h>
 #include <stdlib.h>
 #include <algorithm>
 #include "gdal_priv.h"
@@ -179,8 +179,6 @@ void resampling_algorithm(String originalMapPath, String newMapPath, ResamplingM
 	int maxMemoryMB = 1024; //in MB
 	int byteToMB = 10 ^ 6;
 
-	GDALAllRegister();
-
 	pOriginalDataset = (GDALDataset *)GDALOpen(originalMapPath.get_cstring(), GA_ReadOnly);
 	pNewDataset = (GDALDataset *)GDALOpen(newMapPath.get_cstring(), GA_Update);
 	if (pNewDataset == NULL || pOriginalDataset == NULL) {
@@ -196,7 +194,7 @@ void resampling_algorithm(String originalMapPath, String newMapPath, ResamplingM
 	GDALRasterBand *originalMapBand = pOriginalDataset->GetRasterBand(1);
 	GDALRasterBand *newMapBand = pNewDataset->GetRasterBand(1);
 
-	GDALDataType originalMapCellType = originalMapBand->GetRasterDataType();
+	//GDALDataType originalMapCellType = originalMapBand->GetRasterDataType();
 	double newMapNullValue = newMapBand->GetNoDataValue();
 	double originalMapNullValue = originalMapBand->GetNoDataValue();
 
@@ -316,16 +314,104 @@ void aggregation_resamplingSum(String originalMapPath, String newMapPath) {
 	resampling_algorithm(originalMapPath, newMapPath, SUM);
 }
 
+
 // [[Rcpp::export]]
 void aggregation_resamplingAverage(String originalMapPath, String newMapPath) {
 	resampling_algorithm(originalMapPath, newMapPath, AVERAGE);
 }
 
+// [[Rcpp::export]]
+CharacterVector aggregation_fieldUniqueValuesString(String shapePath, String fieldName) {
+    GDALDataset       *poDS = 
+		(GDALDataset*) GDALOpenEx(shapePath.get_cstring(), GDAL_OF_VECTOR, NULL, NULL, NULL );
+	if( poDS == NULL ) {
+		printf( "Open failed.\n" );
+		exit( 1 );
+	}
+
+	std::set<std::string> uniqueValues;
+	OGRLayer * resultLayer = poDS->ExecuteSQL((
+			std::string("SELECT \"") + std::string(fieldName.get_cstring())
+			+ std::string("\"  FROM geology")
+		).c_str(),
+		nullptr,
+		nullptr);
+	for (OGRFeature * poFeature = resultLayer->GetNextFeature(); poFeature != nullptr;
+			poFeature = resultLayer->GetNextFeature()) {
+		uniqueValues.insert(poFeature->GetFieldAsString(0));
+		poFeature->DestroyFeature(poFeature);
+	}
+	poDS->ReleaseResultSet(resultLayer);
+
+	int n = uniqueValues.size();
+	CharacterVector out(n);
+
+	int i = 0;
+	for (auto it = uniqueValues.begin(); it != uniqueValues.end(); ++it, ++i) {
+		out[i] = *it;
+	}
+
+	return out;
+}
+
+// [[Rcpp::export]]
+double aggregation_sumAreaWhere(String shapePath, String where) {
+    GDALDataset       *poDS = 
+		(GDALDataset*) GDALOpenEx(shapePath.get_cstring(), GDAL_OF_VECTOR, NULL, NULL, NULL );
+	if (poDS == NULL) {
+		printf( "Open failed.\n" );
+		exit( 1 );
+	}
+	OGRLayer  * resultLayer = poDS->ExecuteSQL(
+		(
+			std::string("SELECT SUM(OGR_GEOM_AREA) FROM geology WHERE ") + std::string(where.get_cstring())
+		).c_str(),
+		nullptr,
+		nullptr);
+	
+	double totalArea = 0;
+	for (OGRFeature * poFeature = resultLayer->GetNextFeature(); poFeature != nullptr;
+			poFeature = resultLayer->GetNextFeature()) {
+		totalArea += poFeature->GetFieldAsDouble(0);
+		poFeature->DestroyFeature(poFeature);
+	}
+	poDS->ReleaseResultSet(resultLayer);
+	return totalArea;
+}
+
+// [[Rcpp::export]]
+double aggregation_sumAreaByValue(String shapePath, String fieldName, String fieldValue) {
+	String where = std::string("\"") + std::string(fieldName.get_cstring()) + std::string("\"= '")
+		+ std::string(fieldValue.get_cstring()) + std::string("'");
+	return aggregation_sumAreaWhere(shapePath, where);
+}
+
+/**
+ * Função que retorna uma tabela da area da região agrupada pela coluna.
+ * Para cada entrada única, são somadas a áreas das features que tem aquele valor.
+ * 
+ * @param {String} shapePath Caminho do Shapefile.
+ * @param {String} fieldName Nome da coluna para agrupar.
+ * @return {Rcpp::DataFrame} Retorna as tuplas [<Propriedade> -> <Area>],..
+ */
+// [[Rcpp::export]]
+DataFrame aggregation_sumAreaGroupedByColumn(String shapePath, String fieldName) {
+	CharacterVector allValues = aggregation_fieldUniqueValuesString(shapePath, fieldName);
+	NumericVector allAreas(allValues.length());
+
+	auto itArea = allAreas.begin();
+	for (CharacterVector::iterator itChar = allValues.begin(); itChar != allValues.end(); ++itChar, ++itArea) {
+		*itArea = aggregation_sumAreaByValue(shapePath, fieldName, *itChar);
+	}
+	return DataFrame::create(Named("Name") = allValues, Named("Area") = allAreas);
+}
+
 /**
  * Função que retorna a versão do gdal.
- * @return {Sting} Versão do gdal.
+ * @return {String} Versão do gdal.
 */
 // [[Rcpp::export]]
-String aggregation_gdalVersion() {
+String aggregation_init() {
+	GDALAllRegister();
 	return GDALVersionInfo("VERSION_NUM");
 }
