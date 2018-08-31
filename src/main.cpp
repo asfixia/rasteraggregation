@@ -322,7 +322,7 @@ void aggregation_resamplingAverage(String originalMapPath, String newMapPath) {
 
 // [[Rcpp::export]]
 CharacterVector aggregation_fieldUniqueValuesString(String shapePath, String fieldName) {
-    GDALDataset       *poDS = 
+  GDALDataset       *poDS = 
 		(GDALDataset*) GDALOpenEx(shapePath.get_cstring(), GDAL_OF_VECTOR, NULL, NULL, NULL );
 	if( poDS == NULL ) {
 		printf( "Open failed.\n" );
@@ -403,7 +403,7 @@ DataFrame aggregation_sumAreaGroupedByColumn(String shapePath, String fieldName)
 	for (CharacterVector::iterator itChar = allValues.begin(); itChar != allValues.end(); ++itChar, ++itArea) {
 		*itArea = aggregation_sumAreaByValue(shapePath, fieldName, *itChar);
 	}
-	return DataFrame::create(Named("Name") = allValues, Named("Area") = allAreas);
+	return DataFrame::create(Named("Name") = allValues, Named("Area") = allAreas, Named("stringsAsFactors") = false);
 }
 
 /**
