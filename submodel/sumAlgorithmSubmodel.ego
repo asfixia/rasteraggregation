@@ -1,53 +1,125 @@
-@date = 2018-Aug-18 17:28:46
+@date = 2018-Aug-31 14:22:12
 @version = 4.0.8.20180319
 @submodel.import = TransformWithWeightedSum { { \"originalMap\" : MapFilename, \"resampledMap\" : MapFilename, \"cellHeightProp\" : RealValue, \"cellWidthProp\" : RealValue } { } { \"resampledMap2\" : MapFilename } }
 Script {{
-    string17874 := String "Get Library at:
+    string17874 := String {
+        constant = "Get Library at:
 
-https://github.com/danilomalzao/rasteraggregation";
+https://github.com/danilomalzao/rasteraggregation"
+    };
 
     Group {{
-        @alias = resampledMap
-        resampledMap := MapFilename "C:/rasteraggregation-master/submodel/pop_density_estimate_2015_resampled.tif";
-
-        @alias = originalMap
-        originalMap := MapFilename "C:/rasteraggregation-master/submodel/pop_density_estimate_2015/pop_density_estimate_2015.tif";
+        @alias = cellHeightProp
+        cellHeightProp := RealValue {
+            constant = 0.503
+        };
 
         @alias = cellWidthProp
-        cellWidthProp := RealValue 0.16;
+        cellWidthProp := RealValue {
+            constant = 0.16
+        };
 
-        @alias = cellHeightProp
-        cellHeightProp := RealValue 0.503;
-
-        Print string17874 .none .unconditional {{
+        Print {
+            initialMessage = string17874,
+            finalMessage = .none,
+            logLevel = .unconditional
+        } {{
         }};
+
+        @alias = originalMap
+        originalMap := MapFilename {
+            constant = "pop_density_estimate_2015/pop_density_estimate_2015.tif"
+        };
+
+        @alias = resampledMap
+        resampledMap := MapFilename {
+            constant = "pop_density_estimate_2015_resampled.tif"
+        };
     }};
 
-    transformWithWeightedSum17595 := TransformWithWeightedSum originalMap resampledMap cellHeightProp cellWidthProp;
+    transformWithWeightedSum17595 := TransformWithWeightedSum {
+        originalMap = originalMap,
+        resampledMap = resampledMap,
+        cellHeightProp = cellHeightProp,
+        cellWidthProp = cellWidthProp
+    };
 
-    loadMap550100 := LoadMap originalMap .none .no 0 .none .none;
+    loadMap550100 := LoadMap {
+        filename = originalMap,
+        nullValue = .none,
+        loadAsSparse = .no,
+        suffixDigits = 0,
+        step = .none,
+        workdir = .none
+    };
 
-    loadMap55010 := LoadMap transformWithWeightedSum17595 .none .no 0 .none .none;
+    loadMap55010 := LoadMap {
+        filename = transformWithWeightedSum17595,
+        nullValue = .none,
+        loadAsSparse = .no,
+        suffixDigits = 0,
+        step = .none,
+        workdir = .none
+    };
 
-    extractMapAttributes15811 _ := ExtractMapAttributes loadMap55010 .yes .yes;
+    extractMapAttributes158110 _ := ExtractMapAttributes {
+        map = loadMap550100,
+        extractDynamicAttributes = .yes,
+        extractStatisticalAttributes = .yes
+    };
 
-    extractMapAttributes158110 _ := ExtractMapAttributes loadMap550100 .yes .yes;
+    extractMapAttributes15811 _ := ExtractMapAttributes {
+        map = loadMap55010,
+        extractDynamicAttributes = .yes,
+        extractStatisticalAttributes = .yes
+    };
 
     @viewer.result = yes
-    getTableValue15816 := GetTableValue extractMapAttributes158110 [ 12 ] 2 .none;
+    getTableValue15816 := GetTableValue {
+        table = extractMapAttributes158110,
+        keys = [ 12 ],
+        column = 2,
+        valueIfNotFound = .none
+    };
 
     @viewer.result = yes
-    getTableValue158160 := GetTableValue extractMapAttributes15811 [ 12 ] 2 .none;
+    getTableValue158160 := GetTableValue {
+        table = extractMapAttributes15811,
+        keys = [ 12 ],
+        column = 2,
+        valueIfNotFound = .none
+    };
 
     @collapsed = no
-    createString55431 := CreateString "OriginalMapSum: <v1>
+    createString55431 := CreateString {
+        format = "OriginalMapSum: <v1>
 
-ResampledMapSum: <v2>" {{
-        NumberValue getTableValue15816 1;
+ResampledMapSum: <v2>"
+    } {{
+        NumberValue {
+            value = getTableValue15816,
+            valueNumber = 1
+        };
 
-        NumberValue getTableValue158160 2;
+        NumberValue {
+            value = getTableValue158160,
+            valueNumber = 2
+        };
     }};
 
-    Print createString55431 .none .unconditional {{
+    Print {
+        initialMessage = createString55431,
+        finalMessage = .none,
+        logLevel = .unconditional
+    } {{
     }};
+
+    _ := LoadCategoricalMap {
+        filename = "//leda/base_de_dados/base_servidor_mapas/remanescentes_florestais_desmatamento/brasil/terraclass/terraclass.tif",
+        nullValue = .none,
+        loadAsSparse = .no,
+        suffixDigits = 0,
+        step = .none,
+        workdir = .none
+    };
 }};

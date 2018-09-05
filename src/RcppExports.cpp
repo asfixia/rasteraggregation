@@ -86,6 +86,30 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// aggregation_interpretExpressionDouble
+bool aggregation_interpretExpressionDouble(String curFilter, double ruleValue);
+RcppExport SEXP _rasteraggregation_aggregation_interpretExpressionDouble(SEXP curFilterSEXP, SEXP ruleValueSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< String >::type curFilter(curFilterSEXP);
+    Rcpp::traits::input_parameter< double >::type ruleValue(ruleValueSEXP);
+    rcpp_result_gen = Rcpp::wrap(aggregation_interpretExpressionDouble(curFilter, ruleValue));
+    return rcpp_result_gen;
+END_RCPP
+}
+// aggregation_interpretExpressionString
+bool aggregation_interpretExpressionString(String curFilter, String ruleValue);
+RcppExport SEXP _rasteraggregation_aggregation_interpretExpressionString(SEXP curFilterSEXP, SEXP ruleValueSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< String >::type curFilter(curFilterSEXP);
+    Rcpp::traits::input_parameter< String >::type ruleValue(ruleValueSEXP);
+    rcpp_result_gen = Rcpp::wrap(aggregation_interpretExpressionString(curFilter, ruleValue));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rasteraggregation_aggregation_resamplingSum", (DL_FUNC) &_rasteraggregation_aggregation_resamplingSum, 2},
@@ -95,6 +119,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rasteraggregation_aggregation_sumAreaByValue", (DL_FUNC) &_rasteraggregation_aggregation_sumAreaByValue, 3},
     {"_rasteraggregation_aggregation_sumAreaGroupedByColumn", (DL_FUNC) &_rasteraggregation_aggregation_sumAreaGroupedByColumn, 2},
     {"_rasteraggregation_aggregation_init", (DL_FUNC) &_rasteraggregation_aggregation_init, 0},
+    {"_rasteraggregation_aggregation_interpretExpressionDouble", (DL_FUNC) &_rasteraggregation_aggregation_interpretExpressionDouble, 2},
+    {"_rasteraggregation_aggregation_interpretExpressionString", (DL_FUNC) &_rasteraggregation_aggregation_interpretExpressionString, 2},
     {NULL, NULL, 0}
 };
 
