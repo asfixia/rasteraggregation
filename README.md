@@ -25,3 +25,16 @@ To install R in dinamica.
 library(rasteraggregation)
 aggregation_resamplingSum("C:/rasteraggregation-master/submodel/pop_density_estimate_2015/pop_density_estimate_2015.tif", "C:/rasteraggregation-master/submodel/pop_density_estimate_2015_resampled.tif")
 ```
+
+# Solving Errors
+### Cannot access RWinLib URL
+1) Download file: https://github.com/rwinlib/gdal2/archive/v2.2.3.zip
+2) Edit by hand the winlibs.R:
+Comment the download line
+Put the downloaded file path
+Comment the unlink command
+```
+   #download.file(sprintf("https://github.com/rwinlib/gdal2/archive/v%s.zip", VERSION), "lib.zip", quiet = TRUE)
+   unzip("C:/Users/administrador.CSR/AppData/Local/Temp/2/gdal2-2.2.3.zip", exdir = "../windows")
+   #unlink("lib.zip")
+```
