@@ -9,7 +9,31 @@ aggregation_resamplingAverage <- function(originalMapPath, newMapPath) {
     invisible(.Call(`_rasteraggregation_aggregation_resamplingAverage`, originalMapPath, newMapPath))
 }
 
-aggregation_gdalVersion <- function() {
-    .Call(`_rasteraggregation_aggregation_gdalVersion`)
+aggregation_fieldUniqueValuesString <- function(shapePath, fieldName) {
+    .Call(`_rasteraggregation_aggregation_fieldUniqueValuesString`, shapePath, fieldName)
+}
+
+aggregation_sumAreaWhere <- function(shapePath, where) {
+    .Call(`_rasteraggregation_aggregation_sumAreaWhere`, shapePath, where)
+}
+
+aggregation_sumAreaByValue <- function(shapePath, fieldName, fieldValue) {
+    .Call(`_rasteraggregation_aggregation_sumAreaByValue`, shapePath, fieldName, fieldValue)
+}
+
+aggregation_sumAreaGroupedByColumn <- function(shapePath, fieldName) {
+    .Call(`_rasteraggregation_aggregation_sumAreaGroupedByColumn`, shapePath, fieldName)
+}
+
+aggregation_init <- function() {
+    .Call(`_rasteraggregation_aggregation_init`)
+}
+
+aggregation_interpretExpressionDouble <- function(curFilter, ruleValue) {
+    .Call(`_rasteraggregation_aggregation_interpretExpressionDouble`, curFilter, ruleValue)
+}
+
+aggregation_interpretExpressionString <- function(curFilter, ruleValue) {
+    .Call(`_rasteraggregation_aggregation_interpretExpressionString`, curFilter, ruleValue)
 }
 
